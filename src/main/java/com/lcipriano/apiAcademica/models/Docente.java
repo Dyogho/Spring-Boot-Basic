@@ -24,10 +24,10 @@ public class Docente {
     //Validaciones minimas
     
     @Email(message = "Correo no valido")  //El emailDocente debe tener el formato de correo
-    private String emailDocente;
+    private String emailDocente; 
 
     @Past(message = "La fecha debe ser anterior al de hoy") //El tiempoServicio no puede ser negativo
-    private LocalDate fecNacimiento;
+    private LocalDate fecNacimiento; // Se puede agregar un limite de edad x>20
 
     @Min(value = 0, message = "El tiempo de servicio no puede ser negativo") //El tiempoServicio no puede ser negativo
     private int tiempoServicio;

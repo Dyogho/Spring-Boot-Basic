@@ -2,6 +2,7 @@ package com.lcipriano.apiAcademica.controllers;
 
 import com.lcipriano.apiAcademica.models.Docente;
 import com.lcipriano.apiAcademica.repositories.DocenteRepository;
+import com.lcipriano.apiAcademica.exceptions.RecursoNoEncontradoException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -42,30 +43,32 @@ public class DocenteController {
             @DeleteMapping("/{id}")
             public ResponseEntity<Void> eliminar(@PathVariable Long id) {
                 if (repo.existsById(id)) {
-                    repo.deleteById(id);
-                    return ResponseEntity.noContent().build();
+                        repo.deleteById(id);
+                        return ResponseEntity.noContent().build();
+                    }
+                    throw new RecursoNoEncontradoException("Docente con ID " + id + " no encontrado");
                 }
-                return ResponseEntity.notFound().build();
-            }
 
             @GetMapping
             public List<Docente> listarTodos() {
                 return repo.findAll();
             }
 
-            @GetMapping("/{id}")
-            public ResponseEntity<Docente> buscarPorId(@PathVariable Long id) {
-                return repo.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-            }
-
             // @GetMapping("/{id}")
             // public ResponseEntity<Docente> buscarPorId(@PathVariable Long id) {
-            //     Docente d = repo.findById(id)
-            //         .orElseThrow(() -> new RecursoNoEncontradoException("Docente con ID " + id + " no encontrado"));
-            //     return ResponseEntity.ok(d); // Se agrega la expecion
+            //     return repo.findById(id)
+            //         .map(ResponseEntity::ok)
+            //         .orElse(ResponseEntity.notFound().build());
             // }
+
+                    // Estos dos clases serian la diferencia entre usar Exceptions y no usar
+
+            @GetMapping("/{id}")
+            public ResponseEntity<Docente> buscarPorId(@PathVariable Long id) {
+                Docente d = repo.findById(id)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Docente con ID " + id + " no encontrado"));
+                return ResponseEntity.ok(d); // Se agrega la expecion
+            }
 
             @GetMapping("/ciudad/{ciudad}")    //Listar todos los docentes que residen en una ciudad específica 
             public List<Docente> buscarporCiudad(@PathVariable String ciudad) {
@@ -74,7 +77,10 @@ public class DocenteController {
 
             @GetMapping("/experiencia/{service}") //Listar los docentes con al menos cierta cantidad de años de servicio
             public List<Docente> buscarporExperiencia(@PathVariable int service) {
-                return repo.findByTiempoServicioGreaterThanEqual(service);
+                if (service < 0) {
+                      throw new IllegalArgumentException("La experiencia no puede ser negativa.");
+                 }
+                 return repo.findByTiempoServicioGreaterThanEqual(service);
             }
 
             @GetMapping("/edad-promedio") //Calcula y devuelve la edad promedio de todos los docentes registrados
