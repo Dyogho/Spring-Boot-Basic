@@ -2,7 +2,9 @@ package com.lcipriano.apiAcademica.controllers;
 
 import com.lcipriano.apiAcademica.models.Docente;
 import com.lcipriano.apiAcademica.repositories.DocenteRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,6 +60,13 @@ public class DocenteController {
                     .orElse(ResponseEntity.notFound().build());
             }
 
+            // @GetMapping("/{id}")
+            // public ResponseEntity<Docente> buscarPorId(@PathVariable Long id) {
+            //     Docente d = repo.findById(id)
+            //         .orElseThrow(() -> new RecursoNoEncontradoException("Docente con ID " + id + " no encontrado"));
+            //     return ResponseEntity.ok(d); // Se agrega la expecion
+            // }
+
             @GetMapping("/ciudad/{ciudad}")    //Listar todos los docentes que residen en una ciudad específica 
             public List<Docente> buscarporCiudad(@PathVariable String ciudad) {
                 return repo.findByCiuDocenteIgnoreCase(ciudad);
@@ -76,4 +85,15 @@ public class DocenteController {
                     .average()                  // Period.between calcula la edad y average el promedio
                     .orElse(0);             // si no existe docentes devuelve 0
             }
+
+            @GetMapping("/pages")
+            public ResponseEntity<Page<Docente>> listardocentesPaginados(
+                    @RequestParam(defaultValue = "0") int page,
+                    @RequestParam(defaultValue = "10") int size
+            ) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Docente> docentes = repo.findAll(pageable);
+                return ResponseEntity.ok(docentes);
+            }
+
 }
